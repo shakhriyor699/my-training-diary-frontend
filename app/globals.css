@@ -1,26 +1,126 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f7f2e8;
+  --foreground: #211c16;
+  --surface: #fffdfa;
+  --surface-foreground: #2d251e;
+  --muted: #eadfce;
+  --muted-foreground: #6f6254;
+  --border: #d8c6af;
+  --input: #efe4d6;
+  --ring: #b86f35;
+  --primary: #c35f2d;
+  --primary-foreground: #fff8f3;
+  --accent: #254f4a;
+  --accent-foreground: #f4fffc;
+  --danger: #af3f33;
+  --danger-foreground: #fff6f4;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-surface: var(--surface);
+  --color-surface-foreground: var(--surface-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --font-sans: "Segoe UI", "Helvetica Neue", sans-serif;
+  --font-mono: "SFMono-Regular", "SF Mono", "Menlo", monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background:
+    radial-gradient(circle at top left, rgb(255 255 255 / 0.75), transparent 30%),
+    radial-gradient(circle at bottom right, rgb(195 95 45 / 0.12), transparent 30%),
+    var(--background);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+::selection {
+  background: rgb(195 95 45 / 0.18);
+}
+
+@keyframes td-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes td-pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgb(74 222 128 / 0.45);
+  }
+
+  70% {
+    box-shadow: 0 0 0 12px rgb(74 222 128 / 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgb(74 222 128 / 0);
+  }
+}
+
+@keyframes td-progress-shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+.td-float {
+  animation: td-float 7s ease-in-out infinite;
+}
+
+.td-pulse-ring {
+  animation: td-pulse-ring 2.2s ease-out infinite;
+}
+
+.td-progress-shimmer {
+  background-size: 200% 100%;
+  animation: td-progress-shimmer 3s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .td-float,
+  .td-pulse-ring,
+  .td-progress-shimmer {
+    animation: none;
+  }
 }
