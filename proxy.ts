@@ -5,6 +5,7 @@ import {
   ACCESS_TOKEN_COOKIE,
   REFRESH_TOKEN_COOKIE,
 } from "@/src/shared/config/cookies";
+import { env } from "@/src/shared/config/env";
 import { routing } from "@/src/i18n/routing";
 
 const intlMiddleware = createMiddleware(routing);
@@ -145,7 +146,7 @@ function shouldAttemptSessionRefresh(pathname: string) {
 async function getUserRole(accessToken: string) {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL?.trim() || "http://localhost:3001"}/users/me`,
+      `${env.API_BASE_URL}/users/me`,
       {
       headers: {
         Authorization: `Bearer ${accessToken}`,

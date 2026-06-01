@@ -1,5 +1,26 @@
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL?.trim() || "http://localhost:3001";
+const DEFAULT_API_BASE_URL = "https://my-training-diary-backend-3.onrender.com";
+
+function normalizeApiBaseUrl(value?: string) {
+  const trimmedValue = value?.trim();
+
+  if (!trimmedValue) {
+    return DEFAULT_API_BASE_URL;
+  }
+
+  try {
+    const url = new URL(trimmedValue);
+
+    if (url.hostname === "localhost") {
+      url.hostname = "127.0.0.1";
+    }
+
+    return url.toString().replace(/\/$/, "");
+  } catch {
+    return trimmedValue.replace(/\/$/, "") || DEFAULT_API_BASE_URL;
+  }
+}
+
+const API_BASE_URL = normalizeApiBaseUrl(process.env.NEXT_PUBLIC_API_URL);
 
 export const env = {
   API_BASE_URL,
