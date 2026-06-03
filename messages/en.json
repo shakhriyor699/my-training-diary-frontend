@@ -211,21 +211,115 @@
   },
   "AdminUserDetails": {
     "back": "Back to users",
-    "title": "User details",
-    "description": "Inspect a user by ID for admin and moderator roles.",
-    "error": "Unable to load user: {message}",
+    "title": "User training overview",
+    "description": "Inspect the profile, plans, sessions, and exercise analytics for a specific user.",
+    "error": "Unable to load user training overview: {message}",
     "errorFallback": "temporary backend error",
-    "card": {
+    "profile": {
       "title": "User profile",
-      "id": "ID",
+      "name": "Name",
+      "emptyValue": "Not provided"
+    },
+    "card": {
       "email": "Email",
       "role": "Role",
       "status": "Status",
-      "rejectionReason": "Rejection reason",
-      "noReason": "There is no rejection reason.",
-      "createdAt": "Created",
-      "empty": "User not found",
-      "emptyDescription": "Check the ID or try again later."
+      "createdAt": "Created"
+    },
+    "counts": {
+      "totalPlans": "Total plans",
+      "assignedPlans": "Assigned plans",
+      "authoredPlans": "Authored plans",
+      "activeExercises": "Active exercises"
+    },
+    "activePlan": {
+      "title": "Active plan",
+      "description": "The current plan that best represents the user's active training work.",
+      "empty": "This user does not have an active plan yet."
+    },
+    "recentSessions": {
+      "title": "Recent sessions",
+      "description": "The latest recorded workout sessions with exercise and set details.",
+      "empty": "No recent sessions were found."
+    },
+    "topExercises": {
+      "title": "Top exercises",
+      "description": "High-performing exercises ranked by usage and performance snapshots.",
+      "empty": "No top exercise data is available yet."
+    },
+    "stats": {
+      "title": "Training analytics",
+      "description": "Summary metrics, recent cadence, muscle-group distribution, and best lifts.",
+      "totalWorkouts": "Total workouts",
+      "totalSets": "Total sets",
+      "totalReps": "Total reps",
+      "totalVolume": "Total volume",
+      "averageRir": "Average RIR",
+      "currentStreak": "Current streak",
+      "days": "days",
+      "lastWorkout": "Last workout",
+      "week": "This week",
+      "month": "This month",
+      "muscleGroups": "Muscle groups",
+      "bestLifts": "Best estimated 1RM",
+      "noData": "No analytics data yet."
+    },
+    "plans": {
+      "title": "Training plans",
+      "description": "Assigned and authored plans, including workout days and exercise targets.",
+      "assigned": "Assigned plans",
+      "authored": "Authored plans",
+      "empty": "No plans found in this section."
+    },
+    "sessions": {
+      "title": "Session history",
+      "description": "Paginated workout history with optional date filtering.",
+      "empty": "No sessions match the current filter.",
+      "page": "Page",
+      "previous": "Previous",
+      "next": "Next",
+      "filterDate": "Session date",
+      "filterApply": "Apply filter",
+      "filterReset": "Reset"
+    },
+    "exerciseProgress": {
+      "title": "Exercise progress",
+      "description": "Exercise-level performance summaries and recent tracked entries.",
+      "empty": "No exercise progress data is available."
+    },
+    "planDetails": {
+      "description": "Description",
+      "goal": "Goal",
+      "author": "Author",
+      "assignedUser": "Assigned user",
+      "deload": "Deload",
+      "workoutDays": "Workout days",
+      "exercises": "Exercises",
+      "noWorkoutDays": "No workout days were included in this plan."
+    },
+    "sessionDetails": {
+      "plan": "Plan",
+      "workoutDay": "Workout day",
+      "exercises": "Exercises",
+      "noExercises": "No exercises were logged for this session.",
+      "target": "Target",
+      "sets": "Sets",
+      "set": "Set",
+      "weight": "Weight",
+      "reps": "Reps",
+      "rir": "RIR"
+    },
+    "progressDetails": {
+      "exercise": "Exercise",
+      "muscleGroup": "Muscle group",
+      "workoutDay": "Workout day",
+      "plan": "Plan",
+      "sessionsCount": "Sessions",
+      "lastPerformedAt": "Last performed",
+      "bestEstimatedOneRepMax": "Best estimated 1RM",
+      "totalVolume": "Total volume",
+      "recentEntries": "Recent entries",
+      "noEntries": "No progress entries were recorded yet."
     }
   },
   "Profile": {

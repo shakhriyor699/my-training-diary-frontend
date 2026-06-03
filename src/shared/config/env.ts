@@ -1,4 +1,5 @@
-const DEFAULT_API_BASE_URL = "https://my-training-diary-backend-3.onrender.com";
+// const DEFAULT_API_BASE_URL = "https://my-training-diary-backend-3.onrender.com";
+const DEFAULT_API_BASE_URL = "http://localhost:3001";
 
 function normalizeApiBaseUrl(value?: string) {
   const trimmedValue = value?.trim();
