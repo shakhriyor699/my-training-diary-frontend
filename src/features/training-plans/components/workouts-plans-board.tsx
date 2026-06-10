@@ -316,6 +316,20 @@ export function WorkoutsPlansBoard({
                               {day.title}
                             </p>
                             <p className="mt-2 text-sm text-white/48">Order {day.order}</p>
+                            {canRecord ? (
+                              <div className="mt-4 sm:hidden">
+                                <RecordTrainingSessionDialog
+                                  plan={plan}
+                                  initialWorkoutDayId={day.id}
+                                  initiallyOpen={
+                                    autoOpenPlanId === plan.id &&
+                                    autoOpenWorkoutDayId === day.id
+                                  }
+                                  triggerClassName="h-12 w-full rounded-[12px] px-4"
+                                  labels={labels.recordSession}
+                                />
+                              </div>
+                            ) : null}
                           </div>
 
                           <div className="flex flex-col gap-2 sm:flex-row md:flex-col md:items-stretch">
@@ -432,7 +446,7 @@ export function WorkoutsPlansBoard({
                         autoOpenPlanId === plan.id ? autoOpenWorkoutDayId : undefined
                       }
                       initiallyOpen={autoOpenPlanId === plan.id}
-                      triggerClassName="rounded-[12px] px-5"
+                      triggerClassName="hidden rounded-[12px] px-5 sm:inline-flex"
                       labels={labels.recordSession}
                     />
                   ) : null}
