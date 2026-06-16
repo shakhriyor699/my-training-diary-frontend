@@ -20,6 +20,7 @@ type UsersTableProps = {
     id: string;
     email: string;
     role: string;
+    gymCoinBalance: string;
     status: string;
     createdAt: string;
     actions: string;
@@ -110,6 +111,7 @@ export function UsersTable({
               <th className="px-4 py-3 font-medium">{labels.id}</th>
               <th className="px-4 py-3 font-medium">{labels.email}</th>
               <th className="px-4 py-3 font-medium">{labels.role}</th>
+              <th className="px-4 py-3 font-medium">{labels.gymCoinBalance}</th>
               <th className="px-4 py-3 font-medium">{labels.status}</th>
               <th className="px-4 py-3 font-medium">{labels.createdAt}</th>
               <th className="px-4 py-3 font-medium">{labels.actions}</th>
@@ -118,7 +120,7 @@ export function UsersTable({
           <tbody className="divide-y divide-white/8 bg-black/20">
             {response.data.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-sm text-white/45">
+                <td colSpan={7} className="px-4 py-8 text-center text-sm text-white/45">
                   {labels.empty}
                 </td>
               </tr>
@@ -142,6 +144,11 @@ export function UsersTable({
                   <td className="px-4 py-4">
                     <span className="inline-flex rounded-full border border-white/8 bg-white/[0.04] px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-white/72">
                       {formatRole(user.role)}
+                    </span>
+                  </td>
+                  <td className="px-4 py-4">
+                    <span className="inline-flex rounded-full border border-[#f5b800]/18 bg-[#f5b800]/10 px-3 py-1 text-xs font-semibold text-[#fff1a6]">
+                      {typeof user.gymCoinBalance === "number" ? user.gymCoinBalance : 0}
                     </span>
                   </td>
                   <td className="px-4 py-4">

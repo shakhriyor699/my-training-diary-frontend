@@ -50,6 +50,11 @@ type MyTrainingPlansListProps = {
       trigger: string;
       title: string;
       description: string;
+      gymCoinTitle?: string;
+      gymCoinDescription?: string;
+      gymCoinUnavailable?: string;
+      gymCoinInsufficient?: string;
+      gymCoinChecking?: string;
       titleLabel: string;
       titlePlaceholder: string;
       descriptionLabel: string;
@@ -93,6 +98,7 @@ export function MyTrainingPlansList({
             {labels.browsePublic}
           </Link>
           <CreateTrainingPlanDialog
+            currentUserId={currentUserId}
             goalOptions={goalOptions}
             labels={labels.create}
           />

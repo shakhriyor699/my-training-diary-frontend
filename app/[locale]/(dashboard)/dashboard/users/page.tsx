@@ -124,6 +124,7 @@ export default async function UsersPage({
             id: t("table.id"),
             email: t("table.email"),
             role: t("table.role"),
+            gymCoinBalance: t("table.gymCoinBalance"),
             status: t("table.status"),
             createdAt: t("table.createdAt"),
             actions: t("table.actions"),

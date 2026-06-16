@@ -7,10 +7,13 @@ type ProfileCardProps = {
   labels: {
     title: string;
     description: string;
+    name: string;
+    nameEmpty: string;
     id: string;
     email: string;
     role: string;
     createdAt: string;
+    approvalStatus: string;
     edit: {
       trigger: string;
       title: string;
@@ -46,10 +49,15 @@ export function ProfileCard({ user, labels }: ProfileCardProps) {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
+        <DetailItem label={labels.name} value={user.name?.trim() || labels.nameEmpty} />
         <DetailItem label={labels.id} value={String(user.id)} />
         <DetailItem label={labels.email} value={user.email} />
         <DetailItem label={labels.role} value={formatRole(user.role)} />
         <DetailItem label={labels.createdAt} value={formatDateLabel(user.createdAt)} />
+        <DetailItem
+          label={labels.approvalStatus}
+          value={user.approvalStatus ?? "approved"}
+        />
       </div>
     </section>
   );

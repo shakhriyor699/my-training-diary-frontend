@@ -50,6 +50,11 @@ type WorkoutsPlansBoardProps = {
       trigger: string;
       title: string;
       description: string;
+      gymCoinTitle?: string;
+      gymCoinDescription?: string;
+      gymCoinUnavailable?: string;
+      gymCoinInsufficient?: string;
+      gymCoinChecking?: string;
       titleLabel: string;
       titlePlaceholder: string;
       orderLabel: string;
@@ -110,11 +115,21 @@ type WorkoutsPlansBoardProps = {
         keep_weight: string;
         deload: string;
       };
+      gymCoinReward: {
+        rewarded: string;
+        rewardedFallback: string;
+        reasons: Record<string, string>;
+      };
     };
     createExercise: {
       trigger: string;
       title: string;
       description: string;
+      gymCoinTitle?: string;
+      gymCoinDescription?: string;
+      gymCoinUnavailable?: string;
+      gymCoinInsufficient?: string;
+      gymCoinChecking?: string;
       nameLabel: string;
       namePlaceholder: string;
       descriptionLabel: string;
@@ -319,6 +334,7 @@ export function WorkoutsPlansBoard({
                             {canRecord ? (
                               <div className="mt-4 sm:hidden">
                                 <RecordTrainingSessionDialog
+                                  currentUserId={currentUserId}
                                   plan={plan}
                                   initialWorkoutDayId={day.id}
                                   initiallyOpen={
@@ -419,6 +435,7 @@ export function WorkoutsPlansBoard({
 
                           {canManage ? (
                             <CreateWorkoutExerciseDialog
+                              currentUserId={currentUserId}
                               day={day}
                               exerciseTypeOptions={exerciseTypeOptions}
                               muscleGroupOptions={muscleGroupOptions}
@@ -441,6 +458,7 @@ export function WorkoutsPlansBoard({
                 <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
                   {canRecord ? (
                     <RecordTrainingSessionDialog
+                      currentUserId={currentUserId}
                       plan={plan}
                       initialWorkoutDayId={
                         autoOpenPlanId === plan.id ? autoOpenWorkoutDayId : undefined
@@ -452,6 +470,7 @@ export function WorkoutsPlansBoard({
                   ) : null}
                   {canManage ? (
                     <CreateWorkoutDayDialog
+                      currentUserId={currentUserId}
                       plan={plan}
                       triggerClassName="rounded-[12px] border border-white/14 bg-transparent px-5 text-white shadow-none hover:bg-white/[0.04] hover:text-white"
                       labels={labels.createDay}

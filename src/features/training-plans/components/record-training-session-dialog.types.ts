@@ -2,6 +2,7 @@ import type {
   ExerciseRecommendationAction,
   MyTrainingPlan,
 } from "@/src/features/training-plans/lib/training-plans.types";
+import type { GymCoinRewardToastLabels } from "@/src/features/gymcoin/lib/gymcoin-reward-toast";
 
 export type SessionRow = {
   exerciseId: number;
@@ -55,9 +56,11 @@ export type RecordTrainingSessionDialogLabels = {
   recommendedWeight: string;
   increaseBy: string;
   actions: Record<ExerciseRecommendationAction, string>;
+  gymCoinReward: GymCoinRewardToastLabels;
 };
 
 export type RecordTrainingSessionDialogProps = {
+  currentUserId: number;
   plan: MyTrainingPlan;
   triggerClassName?: string;
   initialWorkoutDayId?: number;

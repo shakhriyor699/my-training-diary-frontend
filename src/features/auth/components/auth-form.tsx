@@ -1,7 +1,8 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -53,6 +54,8 @@ export function AuthForm({
   alternateHref,
 }: AuthFormProps) {
   const t = useTranslations("Auth.form");
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const [formError, setFormError] = useState<string | null>(null);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [registerState, setRegisterState] = useState<RegisterAuthResponse | null>(null);
@@ -92,7 +95,9 @@ export function AuthForm({
         return;
       }
 
-      window.location.assign(`/${locale}/dashboard`);
+      queryClient.clear();
+      router.replace(`/${locale}/dashboard`);
+      router.refresh();
     },
     onError: (error) => {
       if (error instanceof ApiError && error.payload && typeof error.payload === "object") {

@@ -1,11 +1,18 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
+import { refreshGymCoinWallet } from "@/src/features/gymcoin/api/gymcoin-client";
+import { GymCoinFeatureAccessPanel } from "@/src/features/gymcoin/components/gymcoin-feature-access-panel";
+import { useGymCoinFeatureAccess } from "@/src/features/gymcoin/components/use-gymcoin-feature-access";
+import {
+  DEFAULT_GYMCOIN_COSTS,
+  GYMCOIN_FEATURES,
+} from "@/src/features/gymcoin/lib/gymcoin.constants";
 import { createWorkoutDay } from "@/src/features/training-plans/api/create-workout-day";
 import type { MyTrainingPlan } from "@/src/features/training-plans/lib/training-plans.types";
 import {
@@ -15,6 +22,7 @@ import {
 import { cn } from "@/src/shared/lib/utils";
 
 type CreateWorkoutDayDialogProps = {
+  currentUserId: number;
   plan: MyTrainingPlan;
   triggerClassName?: string;
   labels: {
@@ -30,18 +38,31 @@ type CreateWorkoutDayDialogProps = {
     cancel: string;
     success: string;
     errorFallback: string;
+    gymCoinTitle?: string;
+    gymCoinDescription?: string;
+    gymCoinUnavailable?: string;
+    gymCoinInsufficient?: string;
+    gymCoinChecking?: string;
   };
 };
 
 export function CreateWorkoutDayDialog({
+  currentUserId,
   plan,
   triggerClassName,
   labels,
 }: CreateWorkoutDayDialogProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [formError, setFormError] = useState<string | null>(null);
+  const hasGymCoinGuard = Boolean(labels.gymCoinTitle);
+  const accessQuery = useGymCoinFeatureAccess(
+    currentUserId,
+    GYMCOIN_FEATURES.createWorkoutDay,
+    isOpen && hasGymCoinGuard,
+  );
 
   const {
     register,
@@ -59,7 +80,9 @@ export function CreateWorkoutDayDialog({
   const mutation = useMutation({
     mutationFn: (payload: CreateWorkoutDayInput) =>
       createWorkoutDay(plan.id, payload),
-    onSuccess: () => {
+    onSuccess: async () => {
+      await refreshGymCoinWallet(queryClient, currentUserId);
+
       startTransition(() => {
         setIsOpen(false);
         setFormError(null);
@@ -81,6 +104,16 @@ export function CreateWorkoutDayDialog({
 
   const onSubmit = handleSubmit(async (values) => {
     setFormError(null);
+    if (hasGymCoinGuard) {
+      const access = await accessQuery.refetch();
+
+      if (!access.data?.allowed) {
+        setFormError(
+          access.data?.message ?? labels.gymCoinUnavailable ?? labels.errorFallback,
+        );
+        return;
+      }
+    }
 
     const parsed = createWorkoutDaySchema.safeParse(values);
 
@@ -132,6 +165,24 @@ export function CreateWorkoutDayDialog({
             </div>
 
             <form className="space-y-4" onSubmit={onSubmit}>
+              {hasGymCoinGuard ? (
+                <GymCoinFeatureAccessPanel
+                  title={labels.gymCoinTitle ?? ""}
+                  description={labels.gymCoinDescription ?? ""}
+                  checkingLabel={labels.gymCoinChecking ?? labels.submitting}
+                  insufficientLabel={labels.gymCoinInsufficient ?? labels.errorFallback}
+                  unavailableLabel={labels.gymCoinUnavailable ?? labels.errorFallback}
+                  requiredCoins={
+                    accessQuery.data?.requiredCoins ??
+                    DEFAULT_GYMCOIN_COSTS[GYMCOIN_FEATURES.createWorkoutDay]
+                  }
+                  allowed={accessQuery.data?.allowed}
+                  missingCoins={accessQuery.data?.missingCoins ?? 0}
+                  balance={accessQuery.data?.currentBalance ?? null}
+                  isLoading={accessQuery.isLoading || accessQuery.isFetching}
+                />
+              ) : null}
+
               <Field label={labels.titleLabel} htmlFor={`create-day-title-${plan.id}`}>
                 <input
                   id={`create-day-title-${plan.id}`}
@@ -175,7 +226,12 @@ export function CreateWorkoutDayDialog({
                 </button>
                 <button
                   type="submit"
-                  disabled={mutation.isPending || isPending}
+                  disabled={
+                    mutation.isPending ||
+                    isPending ||
+                    (hasGymCoinGuard && accessQuery.isLoading) ||
+                    accessQuery.data?.allowed === false
+                  }
                   className="inline-flex h-11 items-center justify-center rounded-xl bg-[#1cc31c] px-4 text-sm font-semibold text-black transition-colors hover:bg-[#27d927] disabled:opacity-60"
                 >
                   {mutation.isPending || isPending

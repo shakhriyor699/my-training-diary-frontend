@@ -1,6 +1,8 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { UsersPageHeader } from "@/src/features/admin/components/users-page-header";
+import { getGymCoinRulesSafe } from "@/src/features/gymcoin/api/get-gymcoin-rules";
+import { GymCoinAdminPanel } from "@/src/features/gymcoin/components/gymcoin-admin-panel";
 import { getPendingTrainingPlansSafe } from "@/src/features/training-plans/api/get-pending-training-plans";
 import { ModerationPlansTable } from "@/src/features/training-plans/components/moderation-plans-table";
 import { ModerationStatsStrip } from "@/src/features/training-plans/components/moderation-stats-strip";
@@ -15,9 +17,11 @@ export default async function ModerationPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [t, result] = await Promise.all([
+  const [t, gymCoinT, result, rulesResult] = await Promise.all([
     getTranslations("ModerationPlans"),
+    getTranslations("GymCoin.admin"),
     getPendingTrainingPlansSafe(),
+    getGymCoinRulesSafe(),
   ]);
 
   return (
@@ -74,6 +78,34 @@ export default async function ModerationPage({
               rejectSuccess: t("table.actionButtons.rejectSuccess"),
               errorFallback: t("table.actionButtons.errorFallback"),
             },
+          }}
+        />
+
+        <GymCoinAdminPanel
+          initialRules={rulesResult}
+          labels={{
+            title: gymCoinT("title"),
+            description: gymCoinT("description"),
+            empty: gymCoinT("empty"),
+            feature: gymCoinT("feature"),
+            cost: gymCoinT("cost"),
+            enabled: gymCoinT("enabled"),
+            save: gymCoinT("save"),
+            saving: gymCoinT("saving"),
+            saveSuccess: gymCoinT("saveSuccess"),
+            saveErrorFallback: gymCoinT("saveErrorFallback"),
+            topUpTitle: gymCoinT("topUpTitle"),
+            topUpDescription: gymCoinT("topUpDescription"),
+            userId: gymCoinT("userId"),
+            userIdPlaceholder: gymCoinT("userIdPlaceholder"),
+            amount: gymCoinT("amount"),
+            amountPlaceholder: gymCoinT("amountPlaceholder"),
+            reason: gymCoinT("reason"),
+            reasonPlaceholder: gymCoinT("reasonPlaceholder"),
+            submitTopUp: gymCoinT("submitTopUp"),
+            toppingUp: gymCoinT("toppingUp"),
+            topUpSuccess: gymCoinT("topUpSuccess"),
+            topUpErrorFallback: gymCoinT("topUpErrorFallback"),
           }}
         />
       </div>

@@ -9,6 +9,11 @@ export type TrainingPlanFormLabels = {
   trigger: string;
   title: string;
   description: string;
+  gymCoinTitle?: string;
+  gymCoinDescription?: string;
+  gymCoinUnavailable?: string;
+  gymCoinInsufficient?: string;
+  gymCoinChecking?: string;
   titleLabel: string;
   titlePlaceholder: string;
   descriptionLabel: string;

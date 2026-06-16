@@ -8,16 +8,19 @@ import type {
 } from "@/src/features/training-plans/lib/training-plan-form.types";
 
 type CreateTrainingPlanDialogProps = {
+  currentUserId: number;
   goalOptions: TrainingPlanGoalOption[];
   labels: TrainingPlanFormLabels;
 };
 
 export function CreateTrainingPlanDialog({
+  currentUserId,
   goalOptions,
   labels,
 }: CreateTrainingPlanDialogProps) {
   return (
     <TrainingPlanFormDialog
+      currentUserId={currentUserId}
       goalOptions={goalOptions}
       labels={labels}
       onSubmitPlan={createTrainingPlan}

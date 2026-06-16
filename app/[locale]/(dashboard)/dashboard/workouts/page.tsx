@@ -24,8 +24,9 @@ export default async function WorkoutsPage({
   setRequestLocale(locale);
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
 
-  const [t, currentUser, result, referencesResult] = await Promise.all([
+  const [t, gymCoinT, currentUser, result, referencesResult] = await Promise.all([
     getTranslations("WorkoutsPage"),
+    getTranslations("GymCoin.toast"),
     requireCurrentUser(locale),
     getMyTrainingPlansSafe(),
     getTrainingPlanReferencesSafe(),
@@ -106,6 +107,11 @@ export default async function WorkoutsPage({
               trigger: t("board.createDay.trigger"),
               title: t("board.createDay.title"),
               description: t("board.createDay.description"),
+              gymCoinTitle: t("board.createDay.gymCoinTitle"),
+              gymCoinDescription: t("board.createDay.gymCoinDescription"),
+              gymCoinUnavailable: t("board.createDay.gymCoinUnavailable"),
+              gymCoinInsufficient: t("board.createDay.gymCoinInsufficient"),
+              gymCoinChecking: t("board.createDay.gymCoinChecking"),
               titleLabel: t("board.createDay.titleLabel"),
               titlePlaceholder: t("board.createDay.titlePlaceholder"),
               orderLabel: t("board.createDay.orderLabel"),
@@ -166,11 +172,28 @@ export default async function WorkoutsPage({
                 keep_weight: t("board.recordSession.actions.keep_weight"),
                 deload: t("board.recordSession.actions.deload"),
               },
+              gymCoinReward: {
+                rewarded: gymCoinT.raw("rewarded"),
+                rewardedFallback: gymCoinT.raw("rewardedFallback"),
+                reasons: {
+                  daily_login_reward: gymCoinT("reasons.daily_login_reward"),
+                  welcome_bonus: gymCoinT("reasons.welcome_bonus"),
+                  training_session_reward: gymCoinT("reasons.training_session_reward"),
+                  training_completion_reward: gymCoinT("reasons.training_completion_reward"),
+                  completed_training: gymCoinT("reasons.completed_training"),
+                  record_training_session: gymCoinT("reasons.record_training_session"),
+                },
+              },
             },
             createExercise: {
               trigger: t("board.createExercise.trigger"),
               title: t("board.createExercise.title"),
               description: t("board.createExercise.description"),
+              gymCoinTitle: t("board.createExercise.gymCoinTitle"),
+              gymCoinDescription: t("board.createExercise.gymCoinDescription"),
+              gymCoinUnavailable: t("board.createExercise.gymCoinUnavailable"),
+              gymCoinInsufficient: t("board.createExercise.gymCoinInsufficient"),
+              gymCoinChecking: t("board.createExercise.gymCoinChecking"),
               nameLabel: t("board.createExercise.nameLabel"),
               namePlaceholder: t("board.createExercise.namePlaceholder"),
               descriptionLabel: t("board.createExercise.descriptionLabel"),

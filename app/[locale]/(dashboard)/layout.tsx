@@ -6,6 +6,7 @@ import {
   getDisplayNameFromEmail,
   getInitials,
 } from "@/src/features/dashboard/lib/dashboard.utils";
+import { getGymCoinWalletSafe } from "@/src/features/gymcoin/api/get-gymcoin-wallet";
 import { getNotificationsUnreadCountSafe } from "@/src/features/notifications/api/get-notifications-unread-count";
 
 type DashboardLayoutProps = Readonly<{
@@ -33,7 +34,7 @@ const COMMUNITY_NAV = [
 const ADMIN_NAV = [
   { key: "users", href: "dashboard/users", activePath: "/dashboard/users", icon: "users" },
   { key: "moderation", href: "dashboard/moderation", activePath: "/dashboard/moderation", icon: "shield" },
-  { key: "settings", href: "dashboard", activePath: "/dashboard/settings", icon: "cog" },
+  { key: "settings", href: "dashboard/profile", activePath: "/dashboard/profile", icon: "cog" },
 ] as const;
 
 export default async function DashboardLayout({
@@ -43,10 +44,18 @@ export default async function DashboardLayout({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [t, profile, unreadNotificationsResult] = await Promise.all([
+  const [
+    t,
+    gymCoinT,
+    profile,
+    unreadNotificationsResult,
+    walletResult,
+  ] = await Promise.all([
     getTranslations("Dashboard.nav"),
+    getTranslations("GymCoin"),
     getCurrentUserSafe(),
     getNotificationsUnreadCountSafe(),
+    getGymCoinWalletSafe(),
   ]);
   const displayName = profile ? getDisplayNameFromEmail(profile.email) : "User";
   const initials = getInitials(displayName);
@@ -92,6 +101,21 @@ export default async function DashboardLayout({
       communityLabels={communityLabels}
       adminLabels={adminLabels}
       communityBadgeCounts={communityBadgeCounts}
+      currentUserId={profile?.id ?? 0}
+      gymCoinWallet={walletResult}
+      gymCoinLabels={{
+        badge: gymCoinT("wallet.badge"),
+        rewarded: gymCoinT.raw("toast.rewarded"),
+        rewardedFallback: gymCoinT.raw("toast.rewardedFallback"),
+        reasons: {
+          daily_login_reward: gymCoinT("toast.reasons.daily_login_reward"),
+          welcome_bonus: gymCoinT("toast.reasons.welcome_bonus"),
+          training_session_reward: gymCoinT("toast.reasons.training_session_reward"),
+          training_completion_reward: gymCoinT("toast.reasons.training_completion_reward"),
+          completed_training: gymCoinT("toast.reasons.completed_training"),
+          record_training_session: gymCoinT("toast.reasons.record_training_session"),
+        },
+      }}
     >
       {children}
     </DashboardShell>

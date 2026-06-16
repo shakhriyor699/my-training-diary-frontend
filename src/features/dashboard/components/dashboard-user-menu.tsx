@@ -1,5 +1,6 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
@@ -23,6 +24,7 @@ export function DashboardUserMenu({
   onAction,
 }: DashboardUserMenuProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -33,6 +35,7 @@ export function DashboardUserMenu({
         method: "POST",
       });
 
+      queryClient.clear();
       router.replace(`/${locale}/login`);
       router.refresh();
     });

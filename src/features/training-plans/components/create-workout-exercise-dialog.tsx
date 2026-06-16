@@ -1,11 +1,18 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
+import { refreshGymCoinWallet } from "@/src/features/gymcoin/api/gymcoin-client";
+import { GymCoinFeatureAccessPanel } from "@/src/features/gymcoin/components/gymcoin-feature-access-panel";
+import { useGymCoinFeatureAccess } from "@/src/features/gymcoin/components/use-gymcoin-feature-access";
+import {
+  DEFAULT_GYMCOIN_COSTS,
+  GYMCOIN_FEATURES,
+} from "@/src/features/gymcoin/lib/gymcoin.constants";
 import { createWorkoutExercise } from "@/src/features/training-plans/api/create-workout-exercise";
 import type { TrainingPlanWorkoutDay } from "@/src/features/training-plans/lib/training-plans.types";
 import {
@@ -20,6 +27,7 @@ type Option = {
 };
 
 type CreateWorkoutExerciseDialogProps = {
+  currentUserId: number;
   day: TrainingPlanWorkoutDay;
   exerciseTypeOptions: Option[];
   muscleGroupOptions: Option[];
@@ -55,10 +63,16 @@ type CreateWorkoutExerciseDialogProps = {
     unavailableMuscleGroups: string;
     fallbackType: string;
     fallbackMuscleGroup: string;
+    gymCoinTitle?: string;
+    gymCoinDescription?: string;
+    gymCoinUnavailable?: string;
+    gymCoinInsufficient?: string;
+    gymCoinChecking?: string;
   };
 };
 
 export function CreateWorkoutExerciseDialog({
+  currentUserId,
   day,
   exerciseTypeOptions,
   muscleGroupOptions,
@@ -66,11 +80,18 @@ export function CreateWorkoutExerciseDialog({
   labels,
 }: CreateWorkoutExerciseDialogProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [formError, setFormError] = useState<string | null>(null);
   const hasExerciseTypes = exerciseTypeOptions.length > 0;
   const hasMuscleGroups = muscleGroupOptions.length > 0;
+  const hasGymCoinGuard = Boolean(labels.gymCoinTitle);
+  const accessQuery = useGymCoinFeatureAccess(
+    currentUserId,
+    GYMCOIN_FEATURES.createExercise,
+    isOpen && hasGymCoinGuard,
+  );
 
   const {
     register,
@@ -96,7 +117,9 @@ export function CreateWorkoutExerciseDialog({
   const mutation = useMutation({
     mutationFn: (payload: CreateWorkoutExerciseInput) =>
       createWorkoutExercise(day.id, payload),
-    onSuccess: () => {
+    onSuccess: async () => {
+      await refreshGymCoinWallet(queryClient, currentUserId);
+
       startTransition(() => {
         setIsOpen(false);
         setFormError(null);
@@ -126,6 +149,16 @@ export function CreateWorkoutExerciseDialog({
 
   const onSubmit = handleSubmit(async (values) => {
     setFormError(null);
+    if (hasGymCoinGuard) {
+      const access = await accessQuery.refetch();
+
+      if (!access.data?.allowed) {
+        setFormError(
+          access.data?.message ?? labels.gymCoinUnavailable ?? labels.errorFallback,
+        );
+        return;
+      }
+    }
 
     const parsed = createWorkoutExerciseSchema.safeParse(values);
 
@@ -200,6 +233,24 @@ export function CreateWorkoutExerciseDialog({
             </div>
 
             <form className="space-y-4" onSubmit={onSubmit}>
+              {hasGymCoinGuard ? (
+                <GymCoinFeatureAccessPanel
+                  title={labels.gymCoinTitle ?? ""}
+                  description={labels.gymCoinDescription ?? ""}
+                  checkingLabel={labels.gymCoinChecking ?? labels.submitting}
+                  insufficientLabel={labels.gymCoinInsufficient ?? labels.errorFallback}
+                  unavailableLabel={labels.gymCoinUnavailable ?? labels.errorFallback}
+                  requiredCoins={
+                    accessQuery.data?.requiredCoins ??
+                    DEFAULT_GYMCOIN_COSTS[GYMCOIN_FEATURES.createExercise]
+                  }
+                  allowed={accessQuery.data?.allowed}
+                  missingCoins={accessQuery.data?.missingCoins ?? 0}
+                  balance={accessQuery.data?.currentBalance ?? null}
+                  isLoading={accessQuery.isLoading || accessQuery.isFetching}
+                />
+              ) : null}
+
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label={labels.nameLabel} htmlFor={`exercise-name-${day.id}`}>
                   <input
@@ -365,7 +416,14 @@ export function CreateWorkoutExerciseDialog({
                 </button>
                 <button
                   type="submit"
-                  disabled={mutation.isPending || isPending || !hasExerciseTypes || !hasMuscleGroups}
+                  disabled={
+                    mutation.isPending ||
+                    isPending ||
+                    !hasExerciseTypes ||
+                    !hasMuscleGroups ||
+                    (hasGymCoinGuard && accessQuery.isLoading) ||
+                    accessQuery.data?.allowed === false
+                  }
                   className="inline-flex h-11 items-center justify-center rounded-xl bg-[#1cc31c] px-4 text-sm font-semibold text-black transition-colors hover:bg-[#27d927] disabled:opacity-60"
                 >
                   {mutation.isPending || isPending ? labels.submitting : labels.submit}

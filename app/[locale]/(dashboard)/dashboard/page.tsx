@@ -3,6 +3,9 @@ import Link from "next/link";
 
 import { getDashboardData } from "@/src/features/dashboard/api/get-dashboard-data";
 import { getMyTrainingPlansSafe } from "@/src/features/training-plans/api/get-my-training-plans";
+import { getGymCoinTransactionsSafe } from "@/src/features/gymcoin/api/get-gymcoin-transactions";
+import { getGymCoinWalletSafe } from "@/src/features/gymcoin/api/get-gymcoin-wallet";
+import { GymCoinWalletPanel } from "@/src/features/gymcoin/components/gymcoin-wallet-panel";
 import { getDashboardHomeLinks } from "@/src/features/dashboard/lib/dashboard-home-links";
 import {
   formatCompactNumber,
@@ -21,8 +24,19 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [t, { profile, stats, hasProfileError, hasStatsError }] =
-    await Promise.all([getTranslations("Dashboard"), getDashboardData()]);
+  const [
+    t,
+    gymCoinT,
+    { profile, stats, hasProfileError, hasStatsError },
+    walletResult,
+    transactionsResult,
+  ] = await Promise.all([
+    getTranslations("Dashboard"),
+    getTranslations("GymCoin.wallet"),
+    getDashboardData(),
+    getGymCoinWalletSafe(),
+    getGymCoinTransactionsSafe(),
+  ]);
   const trainingPlansResult = profile
     ? await getMyTrainingPlansSafe()
     : { plans: [], hasError: true, errorMessage: "Profile unavailable." };
@@ -106,7 +120,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
           />
         </section>
 
-        <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
           <div className="rounded-[24px] border border-white/8 bg-[#070707] p-6 shadow-[0_20px_80px_rgba(0,0,0,0.24)]">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
@@ -148,26 +162,56 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
             </div>
           </div>
 
-          <div className="rounded-[24px] border border-white/8 bg-[#070707] p-6 shadow-[0_20px_80px_rgba(0,0,0,0.24)]">
-            <h2 className="text-[32px] font-semibold text-white">
-              {t("quickActions.title")}
-            </h2>
-            <div className="mt-6 space-y-2.5">
-              <QuickAction
-                href={quickActions.logWorkoutHref}
-                icon={<PlusIcon />}
-                label={t("quickActions.logWorkout")}
-              />
-              <QuickAction
-                href={quickActions.viewPlansHref}
-                icon={<CalendarLineIcon />}
-                label={t("quickActions.viewPlans")}
-              />
-              <QuickAction
-                href={quickActions.findCoachHref}
-                icon={<UsersLineIcon />}
-                label={t("quickActions.findCoach")}
-              />
+          <div className="space-y-6">
+            <GymCoinWalletPanel
+              userId={profile?.id ?? 0}
+              locale={locale}
+              initialWallet={walletResult}
+              initialTransactions={transactionsResult}
+              labels={{
+                title: gymCoinT("title"),
+                subtitle: gymCoinT("subtitle"),
+                balance: gymCoinT("balance"),
+                emptyHistory: gymCoinT("emptyHistory"),
+                earned: gymCoinT("earned"),
+                spent: gymCoinT("spent"),
+                unavailable: gymCoinT("unavailable"),
+                transactionTitles: {
+                  daily_login_reward: gymCoinT("transactions.daily_login_reward"),
+                  welcome_bonus: gymCoinT("transactions.welcome_bonus"),
+                  create_training_plan: gymCoinT("transactions.create_training_plan"),
+                  create_workout_day: gymCoinT("transactions.create_workout_day"),
+                  create_exercise: gymCoinT("transactions.create_exercise"),
+                  donation_topup: gymCoinT("transactions.donation_topup"),
+                  access_payment: gymCoinT("transactions.access_payment"),
+                  top_up: gymCoinT("transactions.top_up"),
+                  admin_top_up: gymCoinT("transactions.admin_top_up"),
+                  spend_feature: gymCoinT("transactions.spend_feature"),
+                },
+              }}
+            />
+
+            <div className="rounded-[24px] border border-white/8 bg-[#070707] p-6 shadow-[0_20px_80px_rgba(0,0,0,0.24)]">
+              <h2 className="text-[32px] font-semibold text-white">
+                {t("quickActions.title")}
+              </h2>
+              <div className="mt-6 space-y-2.5">
+                <QuickAction
+                  href={quickActions.logWorkoutHref}
+                  icon={<PlusIcon />}
+                  label={t("quickActions.logWorkout")}
+                />
+                <QuickAction
+                  href={quickActions.viewPlansHref}
+                  icon={<CalendarLineIcon />}
+                  label={t("quickActions.viewPlans")}
+                />
+                <QuickAction
+                  href={quickActions.findCoachHref}
+                  icon={<UsersLineIcon />}
+                  label={t("quickActions.findCoach")}
+                />
+              </div>
             </div>
           </div>
         </section>

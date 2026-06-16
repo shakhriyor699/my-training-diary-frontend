@@ -161,6 +161,7 @@ export default async function CoachStudentStatsPage({
             {currentUser.role === "coach" && Number.isFinite(parsedStudentId) && parsedStudentId > 0 ? (
               <>
                 <CreateCoachStudentTrainingPlanDialog
+                  currentUserId={currentUser.id}
                   studentId={parsedStudentId}
                   goalOptions={goalOptions}
                   labels={{
@@ -331,6 +332,7 @@ export default async function CoachStudentStatsPage({
         />
 
         <CoachStudentTrainingPlansBoard
+          currentUserId={currentUser.id}
           plans={plansResult.plans}
           exerciseTypeOptions={referencesResult.references.exerciseTypes.map((type) => ({
             value: type,

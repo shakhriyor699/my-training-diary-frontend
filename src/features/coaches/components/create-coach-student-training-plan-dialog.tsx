@@ -9,18 +9,21 @@ import type {
 import { createCoachStudentTrainingPlan } from "../api/create-coach-student-training-plan";
 
 type CreateCoachStudentTrainingPlanDialogProps = {
+  currentUserId: number;
   studentId: number;
   goalOptions: TrainingPlanGoalOption[];
   labels: TrainingPlanFormLabels;
 };
 
 export function CreateCoachStudentTrainingPlanDialog({
+  currentUserId,
   studentId,
   goalOptions,
   labels,
 }: CreateCoachStudentTrainingPlanDialogProps) {
   return (
     <TrainingPlanFormDialog
+      currentUserId={currentUserId}
       goalOptions={goalOptions}
       labels={labels}
       onSubmitPlan={(payload) =>

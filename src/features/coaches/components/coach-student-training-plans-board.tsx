@@ -47,6 +47,7 @@ type ExerciseDialogLabels = {
 };
 
 type CoachStudentTrainingPlansBoardProps = {
+  currentUserId: number;
   plans: MyTrainingPlan[];
   exerciseTypeOptions: SelectOption[];
   muscleGroupOptions: SelectOption[];
@@ -133,6 +134,7 @@ type CoachStudentTrainingPlansBoardProps = {
 };
 
 export function CoachStudentTrainingPlansBoard({
+  currentUserId,
   plans,
   exerciseTypeOptions,
   muscleGroupOptions,
@@ -207,6 +209,7 @@ export function CoachStudentTrainingPlansBoard({
 
                   {!isLocked ? (
                     <CreateWorkoutDayDialog
+                      currentUserId={currentUserId}
                       plan={plan}
                       triggerClassName="rounded-[12px] border border-white/14 bg-transparent px-5 text-white shadow-none hover:bg-white/[0.04] hover:text-white"
                       labels={labels.createDay}
@@ -255,6 +258,7 @@ export function CoachStudentTrainingPlansBoard({
 
                             {!isLocked ? (
                               <CreateWorkoutExerciseDialog
+                                currentUserId={currentUserId}
                                 day={day}
                                 exerciseTypeOptions={exerciseTypeOptions}
                                 muscleGroupOptions={muscleGroupOptions}

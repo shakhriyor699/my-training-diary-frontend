@@ -5,6 +5,7 @@ export type UserProfile = {
   name?: string | null;
   email: string;
   role: string;
+  gymCoinBalance?: number | null;
   approvalStatus?: UserApprovalStatus;
   rejectionReason?: string | null;
   createdAt: string;

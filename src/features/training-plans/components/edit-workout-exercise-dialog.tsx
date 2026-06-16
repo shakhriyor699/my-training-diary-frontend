@@ -2,7 +2,7 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
@@ -166,6 +166,36 @@ export function EditWorkoutExerciseDialog({
     await mutation.mutateAsync(parsed.data);
   });
 
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+      }
+    }
+
+    const { body, documentElement } = document;
+    const previousBodyOverflow = body.style.overflow;
+    const previousBodyTouchAction = body.style.touchAction;
+    const previousHtmlOverflow = documentElement.style.overflow;
+
+    body.style.overflow = "hidden";
+    body.style.touchAction = "none";
+    documentElement.style.overflow = "hidden";
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      body.style.overflow = previousBodyOverflow;
+      body.style.touchAction = previousBodyTouchAction;
+      documentElement.style.overflow = previousHtmlOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen]);
+
   return (
     <>
       <button
@@ -184,15 +214,25 @@ export function EditWorkoutExerciseDialog({
       </button>
 
       {isOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-          <div className="w-full max-w-3xl rounded-[24px] border border-white/8 bg-[#090909] p-6 shadow-[0_24px_120px_rgba(0,0,0,0.42)]">
-            <div className="mb-6 space-y-2">
-              <h2 className="text-2xl font-semibold text-white">{labels.title}</h2>
-              <p className="text-sm text-white/48">{labels.description}</p>
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center overflow-hidden bg-black/70 px-0 sm:items-center sm:px-4"
+          onClick={() => setIsOpen(false)}
+        >
+          <div
+            className="flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-t-[28px] border border-white/8 bg-[#090909] shadow-[0_24px_120px_rgba(0,0,0,0.42)] sm:rounded-[24px]"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="border-b border-white/8 px-4 pb-4 pt-4 sm:px-6 sm:pb-5 sm:pt-6">
+              <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-white/12 sm:hidden" />
+              <div className="space-y-2">
+                <h2 className="text-2xl font-semibold text-white">{labels.title}</h2>
+                <p className="text-sm text-white/48">{labels.description}</p>
+              </div>
             </div>
 
-            <form className="space-y-4" onSubmit={onSubmit}>
-              <div className="grid gap-4 sm:grid-cols-2">
+            <form className="flex min-h-0 flex-1 flex-col" onSubmit={onSubmit}>
+              <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6 sm:py-5">
+                <div className="grid gap-4 sm:grid-cols-2">
                 <Field label={labels.nameLabel} htmlFor={`edit-exercise-name-${exercise.id}`}>
                   <input
                     id={`edit-exercise-name-${exercise.id}`}
@@ -215,159 +255,165 @@ export function EditWorkoutExerciseDialog({
                   />
                   {errors.order?.message ? <ErrorText>{errors.order.message}</ErrorText> : null}
                 </Field>
-              </div>
-
-              <Field
-                label={labels.descriptionLabel}
-                htmlFor={`edit-exercise-description-${exercise.id}`}
-              >
-                <textarea
-                  id={`edit-exercise-description-${exercise.id}`}
-                  rows={3}
-                  placeholder={labels.descriptionPlaceholder}
-                  className="w-full rounded-xl border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-white/28 focus:border-[#1cc31c]/50 focus:ring-4 focus:ring-[#1cc31c]/10"
-                  {...register("description")}
-                />
-                {errors.description?.message ? (
-                  <ErrorText>{errors.description.message}</ErrorText>
-                ) : null}
-              </Field>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field label={labels.typeLabel} htmlFor={`edit-exercise-type-${exercise.id}`}>
-                  <select
-                    id={`edit-exercise-type-${exercise.id}`}
-                    disabled={!hasExerciseTypes}
-                    className="h-12 w-full rounded-xl border border-white/8 bg-white/[0.03] px-4 text-sm text-white outline-none transition-colors focus:border-[#1cc31c]/50 focus:ring-4 focus:ring-[#1cc31c]/10 disabled:opacity-60"
-                    {...register("type")}
-                  >
-                    {hasExerciseTypes ? (
-                      exerciseTypeOptions.map((option) => (
-                        <option key={option.value} value={option.value} className="bg-[#090909] text-white">
-                          {option.label}
-                        </option>
-                      ))
-                    ) : (
-                      <option value="" className="bg-[#090909] text-white">
-                        {labels.fallbackType}
-                      </option>
-                    )}
-                  </select>
-                  {!hasExerciseTypes ? <ErrorText>{labels.unavailableTypes}</ErrorText> : null}
-                  {errors.type?.message ? <ErrorText>{errors.type.message}</ErrorText> : null}
-                </Field>
+                </div>
 
                 <Field
-                  label={labels.muscleGroupLabel}
-                  htmlFor={`edit-exercise-muscle-${exercise.id}`}
+                  label={labels.descriptionLabel}
+                  htmlFor={`edit-exercise-description-${exercise.id}`}
                 >
-                  <select
-                    id={`edit-exercise-muscle-${exercise.id}`}
-                    disabled={!hasMuscleGroups}
-                    className="h-12 w-full rounded-xl border border-white/8 bg-white/[0.03] px-4 text-sm text-white outline-none transition-colors focus:border-[#1cc31c]/50 focus:ring-4 focus:ring-[#1cc31c]/10 disabled:opacity-60"
-                    {...register("muscleGroup")}
-                  >
-                    {hasMuscleGroups ? (
-                      muscleGroupOptions.map((option) => (
-                        <option key={option.value} value={option.value} className="bg-[#090909] text-white">
-                          {option.label}
+                  <textarea
+                    id={`edit-exercise-description-${exercise.id}`}
+                    rows={3}
+                    placeholder={labels.descriptionPlaceholder}
+                    className="w-full rounded-xl border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-white/28 focus:border-[#1cc31c]/50 focus:ring-4 focus:ring-[#1cc31c]/10"
+                    {...register("description")}
+                  />
+                  {errors.description?.message ? (
+                    <ErrorText>{errors.description.message}</ErrorText>
+                  ) : null}
+                </Field>
+
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <Field label={labels.typeLabel} htmlFor={`edit-exercise-type-${exercise.id}`}>
+                    <select
+                      id={`edit-exercise-type-${exercise.id}`}
+                      disabled={!hasExerciseTypes}
+                      className="h-12 w-full rounded-xl border border-white/8 bg-white/[0.03] px-4 text-sm text-white outline-none transition-colors focus:border-[#1cc31c]/50 focus:ring-4 focus:ring-[#1cc31c]/10 disabled:opacity-60"
+                      {...register("type")}
+                    >
+                      {hasExerciseTypes ? (
+                        exerciseTypeOptions.map((option) => (
+                          <option key={option.value} value={option.value} className="bg-[#090909] text-white">
+                            {option.label}
+                          </option>
+                        ))
+                      ) : (
+                        <option value="" className="bg-[#090909] text-white">
+                          {labels.fallbackType}
                         </option>
-                      ))
-                    ) : (
-                      <option value="" className="bg-[#090909] text-white">
-                        {labels.fallbackMuscleGroup}
-                      </option>
-                    )}
-                  </select>
-                  {!hasMuscleGroups ? (
-                    <ErrorText>{labels.unavailableMuscleGroups}</ErrorText>
-                  ) : null}
-                  {errors.muscleGroup?.message ? (
-                    <ErrorText>{errors.muscleGroup.message}</ErrorText>
-                  ) : null}
-                </Field>
-              </div>
+                      )}
+                    </select>
+                    {!hasExerciseTypes ? <ErrorText>{labels.unavailableTypes}</ErrorText> : null}
+                    {errors.type?.message ? <ErrorText>{errors.type.message}</ErrorText> : null}
+                  </Field>
 
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-                <Field label={labels.targetSetsLabel} htmlFor={`edit-exercise-sets-${exercise.id}`}>
-                  <input
-                    id={`edit-exercise-sets-${exercise.id}`}
-                    type="number"
-                    min="1"
-                    placeholder={labels.targetSetsPlaceholder}
-                    className="h-12 w-full rounded-xl border border-white/8 bg-white/[0.03] px-4 text-sm text-white outline-none transition-colors placeholder:text-white/28 focus:border-[#1cc31c]/50 focus:ring-4 focus:ring-[#1cc31c]/10"
-                    {...register("targetSets", { valueAsNumber: true })}
-                  />
-                  {errors.targetSets?.message ? <ErrorText>{errors.targetSets.message}</ErrorText> : null}
-                </Field>
-                <Field label={labels.minRepsLabel} htmlFor={`edit-exercise-min-reps-${exercise.id}`}>
-                  <input
-                    id={`edit-exercise-min-reps-${exercise.id}`}
-                    type="number"
-                    min="1"
-                    placeholder={labels.minRepsPlaceholder}
-                    className="h-12 w-full rounded-xl border border-white/8 bg-white/[0.03] px-4 text-sm text-white outline-none transition-colors placeholder:text-white/28 focus:border-[#1cc31c]/50 focus:ring-4 focus:ring-[#1cc31c]/10"
-                    {...register("minReps", { valueAsNumber: true })}
-                  />
-                  {errors.minReps?.message ? <ErrorText>{errors.minReps.message}</ErrorText> : null}
-                </Field>
-                <Field label={labels.maxRepsLabel} htmlFor={`edit-exercise-max-reps-${exercise.id}`}>
-                  <input
-                    id={`edit-exercise-max-reps-${exercise.id}`}
-                    type="number"
-                    min="1"
-                    placeholder={labels.maxRepsPlaceholder}
-                    className="h-12 w-full rounded-xl border border-white/8 bg-white/[0.03] px-4 text-sm text-white outline-none transition-colors placeholder:text-white/28 focus:border-[#1cc31c]/50 focus:ring-4 focus:ring-[#1cc31c]/10"
-                    {...register("maxReps", { valueAsNumber: true })}
-                  />
-                  {errors.maxReps?.message ? <ErrorText>{errors.maxReps.message}</ErrorText> : null}
-                </Field>
-                <Field label={labels.targetRirLabel} htmlFor={`edit-exercise-rir-${exercise.id}`}>
-                  <input
-                    id={`edit-exercise-rir-${exercise.id}`}
-                    type="number"
-                    min="0"
-                    placeholder={labels.targetRirPlaceholder}
-                    className="h-12 w-full rounded-xl border border-white/8 bg-white/[0.03] px-4 text-sm text-white outline-none transition-colors placeholder:text-white/28 focus:border-[#1cc31c]/50 focus:ring-4 focus:ring-[#1cc31c]/10"
-                    {...register("targetRir", { valueAsNumber: true })}
-                  />
-                  {errors.targetRir?.message ? <ErrorText>{errors.targetRir.message}</ErrorText> : null}
-                </Field>
-                <Field label={labels.weightStepLabel} htmlFor={`edit-exercise-weight-step-${exercise.id}`}>
-                  <input
-                    id={`edit-exercise-weight-step-${exercise.id}`}
-                    type="number"
-                    min="0"
-                    step="0.5"
-                    placeholder={labels.weightStepPlaceholder}
-                    className="h-12 w-full rounded-xl border border-white/8 bg-white/[0.03] px-4 text-sm text-white outline-none transition-colors placeholder:text-white/28 focus:border-[#1cc31c]/50 focus:ring-4 focus:ring-[#1cc31c]/10"
-                    {...register("weightStep", { valueAsNumber: true })}
-                  />
-                  {errors.weightStep?.message ? <ErrorText>{errors.weightStep.message}</ErrorText> : null}
-                </Field>
-              </div>
-
-              {formError ? (
-                <div className="rounded-2xl border border-[#ff7b72]/18 bg-[#ff7b72]/8 px-4 py-3 text-sm text-[#ff7b72]">
-                  {formError}
+                  <Field
+                    label={labels.muscleGroupLabel}
+                    htmlFor={`edit-exercise-muscle-${exercise.id}`}
+                  >
+                    <select
+                      id={`edit-exercise-muscle-${exercise.id}`}
+                      disabled={!hasMuscleGroups}
+                      className="h-12 w-full rounded-xl border border-white/8 bg-white/[0.03] px-4 text-sm text-white outline-none transition-colors focus:border-[#1cc31c]/50 focus:ring-4 focus:ring-[#1cc31c]/10 disabled:opacity-60"
+                      {...register("muscleGroup")}
+                    >
+                      {hasMuscleGroups ? (
+                        muscleGroupOptions.map((option) => (
+                          <option key={option.value} value={option.value} className="bg-[#090909] text-white">
+                            {option.label}
+                          </option>
+                        ))
+                      ) : (
+                        <option value="" className="bg-[#090909] text-white">
+                          {labels.fallbackMuscleGroup}
+                        </option>
+                      )}
+                    </select>
+                    {!hasMuscleGroups ? (
+                      <ErrorText>{labels.unavailableMuscleGroups}</ErrorText>
+                    ) : null}
+                    {errors.muscleGroup?.message ? (
+                      <ErrorText>{errors.muscleGroup.message}</ErrorText>
+                    ) : null}
+                  </Field>
                 </div>
-              ) : null}
 
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsOpen(false)}
-                  className="inline-flex h-11 items-center justify-center rounded-xl border border-white/8 bg-white/[0.02] px-4 text-sm font-medium text-white/78 transition-colors hover:bg-white/[0.05] hover:text-white"
-                >
-                  {labels.cancel}
-                </button>
-                <button
-                  type="submit"
-                  disabled={mutation.isPending || isPending || !hasExerciseTypes || !hasMuscleGroups}
-                  className="inline-flex h-11 items-center justify-center rounded-xl bg-[#1cc31c] px-4 text-sm font-semibold text-black transition-colors hover:bg-[#27d927] disabled:opacity-60"
-                >
-                  {mutation.isPending || isPending ? labels.submitting : labels.submit}
-                </button>
+                <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+                  <Field label={labels.targetSetsLabel} htmlFor={`edit-exercise-sets-${exercise.id}`}>
+                    <input
+                      id={`edit-exercise-sets-${exercise.id}`}
+                      type="number"
+                      min="1"
+                      placeholder={labels.targetSetsPlaceholder}
+                      className="h-12 w-full rounded-xl border border-white/8 bg-white/[0.03] px-4 text-sm text-white outline-none transition-colors placeholder:text-white/28 focus:border-[#1cc31c]/50 focus:ring-4 focus:ring-[#1cc31c]/10"
+                      {...register("targetSets", { valueAsNumber: true })}
+                    />
+                    {errors.targetSets?.message ? <ErrorText>{errors.targetSets.message}</ErrorText> : null}
+                  </Field>
+                  <Field label={labels.minRepsLabel} htmlFor={`edit-exercise-min-reps-${exercise.id}`}>
+                    <input
+                      id={`edit-exercise-min-reps-${exercise.id}`}
+                      type="number"
+                      min="1"
+                      placeholder={labels.minRepsPlaceholder}
+                      className="h-12 w-full rounded-xl border border-white/8 bg-white/[0.03] px-4 text-sm text-white outline-none transition-colors placeholder:text-white/28 focus:border-[#1cc31c]/50 focus:ring-4 focus:ring-[#1cc31c]/10"
+                      {...register("minReps", { valueAsNumber: true })}
+                    />
+                    {errors.minReps?.message ? <ErrorText>{errors.minReps.message}</ErrorText> : null}
+                  </Field>
+                  <Field label={labels.maxRepsLabel} htmlFor={`edit-exercise-max-reps-${exercise.id}`}>
+                    <input
+                      id={`edit-exercise-max-reps-${exercise.id}`}
+                      type="number"
+                      min="1"
+                      placeholder={labels.maxRepsPlaceholder}
+                      className="h-12 w-full rounded-xl border border-white/8 bg-white/[0.03] px-4 text-sm text-white outline-none transition-colors placeholder:text-white/28 focus:border-[#1cc31c]/50 focus:ring-4 focus:ring-[#1cc31c]/10"
+                      {...register("maxReps", { valueAsNumber: true })}
+                    />
+                    {errors.maxReps?.message ? <ErrorText>{errors.maxReps.message}</ErrorText> : null}
+                  </Field>
+                  <Field label={labels.targetRirLabel} htmlFor={`edit-exercise-rir-${exercise.id}`}>
+                    <input
+                      id={`edit-exercise-rir-${exercise.id}`}
+                      type="number"
+                      min="0"
+                      placeholder={labels.targetRirPlaceholder}
+                      className="h-12 w-full rounded-xl border border-white/8 bg-white/[0.03] px-4 text-sm text-white outline-none transition-colors placeholder:text-white/28 focus:border-[#1cc31c]/50 focus:ring-4 focus:ring-[#1cc31c]/10"
+                      {...register("targetRir", { valueAsNumber: true })}
+                    />
+                    {errors.targetRir?.message ? <ErrorText>{errors.targetRir.message}</ErrorText> : null}
+                  </Field>
+                  <Field label={labels.weightStepLabel} htmlFor={`edit-exercise-weight-step-${exercise.id}`}>
+                    <input
+                      id={`edit-exercise-weight-step-${exercise.id}`}
+                      type="number"
+                      min="0"
+                      step="0.5"
+                      placeholder={labels.weightStepPlaceholder}
+                      className="h-12 w-full rounded-xl border border-white/8 bg-white/[0.03] px-4 text-sm text-white outline-none transition-colors placeholder:text-white/28 focus:border-[#1cc31c]/50 focus:ring-4 focus:ring-[#1cc31c]/10"
+                      {...register("weightStep", { valueAsNumber: true })}
+                    />
+                    {errors.weightStep?.message ? <ErrorText>{errors.weightStep.message}</ErrorText> : null}
+                  </Field>
+                </div>
+
+                {formError ? (
+                  <div className="mt-4 rounded-2xl border border-[#ff7b72]/18 bg-[#ff7b72]/8 px-4 py-3 text-sm text-[#ff7b72]">
+                    {formError}
+                  </div>
+                ) : null}
+              </div>
+
+              <div
+                className="sticky bottom-0 border-t border-white/8 bg-[#090909]/95 px-4 py-4 backdrop-blur sm:px-6"
+                style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 1rem)" }}
+              >
+                <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setIsOpen(false)}
+                    className="inline-flex h-11 w-full items-center justify-center rounded-xl border border-white/8 bg-white/[0.02] px-4 text-sm font-medium text-white/78 transition-colors hover:bg-white/[0.05] hover:text-white sm:w-auto"
+                  >
+                    {labels.cancel}
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={mutation.isPending || isPending || !hasExerciseTypes || !hasMuscleGroups}
+                    className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-[#1cc31c] px-4 text-sm font-semibold text-black transition-colors hover:bg-[#27d927] disabled:opacity-60 sm:h-11 sm:w-auto"
+                  >
+                    {mutation.isPending || isPending ? labels.submitting : labels.submit}
+                  </button>
+                </div>
               </div>
             </form>
           </div>

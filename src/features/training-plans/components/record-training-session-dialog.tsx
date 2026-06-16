@@ -9,6 +9,7 @@ import { useRecordTrainingSessionDialog } from "@/src/features/training-plans/co
 import { cn } from "@/src/shared/lib/utils";
 
 export function RecordTrainingSessionDialog({
+  currentUserId,
   plan,
   triggerClassName,
   initialWorkoutDayId,
@@ -35,6 +36,7 @@ export function RecordTrainingSessionDialog({
     sessionDate,
     workoutDays,
   } = useRecordTrainingSessionDialog({
+    currentUserId,
     plan,
     initialWorkoutDayId,
     initiallyOpen,

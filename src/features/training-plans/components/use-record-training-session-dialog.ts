@@ -1,11 +1,19 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { toast } from "react-toastify";
 
-import { createTrainingSession } from "@/src/features/training-plans/api/create-training-session";
+import {
+  getGymCoinTransactionsQueryKey,
+  getGymCoinWalletQueryKey,
+} from "@/src/features/gymcoin/lib/gymcoin.constants";
+import { showGymCoinRewardToast } from "@/src/features/gymcoin/lib/gymcoin-reward-toast";
+import {
+  createTrainingSession,
+  type CreateTrainingSessionResult,
+} from "@/src/features/training-plans/api/create-training-session";
 import { getExerciseRecommendationClient } from "@/src/features/training-plans/api/get-exercise-recommendation-client";
 import { getMyTrainingSessionsClient } from "@/src/features/training-plans/api/get-my-training-sessions-client";
 import { getNextWorkoutDayRecommendationsClient } from "@/src/features/training-plans/api/get-next-workout-day-recommendations-client";
@@ -33,15 +41,17 @@ import type {
 } from "@/src/features/training-plans/components/record-training-session-dialog.types";
 
 export function useRecordTrainingSessionDialog({
+  currentUserId,
   plan,
   initialWorkoutDayId,
   initiallyOpen = false,
   labels,
 }: Pick<
   RecordTrainingSessionDialogProps,
-  "plan" | "initialWorkoutDayId" | "initiallyOpen" | "labels"
+  "currentUserId" | "plan" | "initialWorkoutDayId" | "initiallyOpen" | "labels"
 >) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [isPending, startTransition] = useTransition();
   const [formError, setFormError] = useState<string | null>(null);
   const workoutDays = plan.workoutDays ?? [];
@@ -242,32 +252,52 @@ export function useRecordTrainingSessionDialog({
   }, [isOpen, labels.errorFallback, selectedWorkoutDay, sessionDate]);
 
   const mutation = useMutation({
-    mutationFn: (payload: {
+    mutationFn: async (payload: {
       planId: number;
       workoutDayId: number;
       date: string;
       exercises: TrainingSessionExerciseInput[];
-    }) => {
+    }): Promise<CreateTrainingSessionResult> => {
       if (existingSession) {
-        return updateTrainingSession(existingSession.id, {
+        const session = await updateTrainingSession(existingSession.id, {
           workoutDayId: payload.workoutDayId,
           exercises: mergeExistingExerciseLogs(existingSession, payload.exercises),
         });
+
+        return {
+          session,
+          reward: null,
+        };
       }
 
       return createTrainingSession(payload);
     },
     onSuccess: (savedSession) => {
+      const nextSession = savedSession.session;
+      const reward = savedSession.reward;
       const savedWorkoutDay =
-        workoutDays.find((day) => day.id === savedSession.workoutDay.id) ??
+        workoutDays.find((day) => day.id === nextSession.workoutDay.id) ??
         selectedWorkoutDay;
 
-      setExistingSession(savedSession);
-      setSelectedWorkoutDayId(savedSession.workoutDay.id);
-      setSessionDate(savedSession.date.slice(0, 10));
+      setExistingSession(nextSession);
+      setSelectedWorkoutDayId(nextSession.workoutDay.id);
+      setSessionDate(nextSession.date.slice(0, 10));
       setFormError(null);
-      setRows(createSessionRows(savedWorkoutDay, savedSession));
+      setRows(createSessionRows(savedWorkoutDay, nextSession));
       toast.success(labels.success);
+
+      if (reward?.wallet) {
+        queryClient.setQueryData(getGymCoinWalletQueryKey(currentUserId), reward.wallet);
+      }
+
+      if (reward?.rewarded) {
+        void queryClient.invalidateQueries({
+          queryKey: getGymCoinTransactionsQueryKey(currentUserId),
+        });
+        showGymCoinRewardToast(reward, labels.gymCoinReward, {
+          fallbackReasonKey: "record_training_session",
+        });
+      }
 
       startTransition(() => {
         router.refresh();

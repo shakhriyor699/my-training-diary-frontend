@@ -5,6 +5,10 @@ import { useEffect, useState } from "react";
 
 import { DashboardNavSection } from "@/src/features/dashboard/components/dashboard-nav-section";
 import { DashboardUserMenu } from "@/src/features/dashboard/components/dashboard-user-menu";
+import { GymCoinBalanceBadge } from "@/src/features/gymcoin/components/gymcoin-balance-badge";
+import { GymCoinDailyLoginBootstrap } from "@/src/features/gymcoin/components/gymcoin-daily-login-bootstrap";
+import type { GymCoinRewardToastLabels } from "@/src/features/gymcoin/lib/gymcoin-reward-toast";
+import type { GymCoinWalletResult } from "@/src/features/gymcoin/lib/gymcoin.types";
 
 type NavItem = {
   key: string;
@@ -30,6 +34,11 @@ type DashboardShellProps = {
   communityLabels: Record<string, string>;
   adminLabels: Record<string, string>;
   communityBadgeCounts: Partial<Record<string, number>>;
+  currentUserId: number;
+  gymCoinWallet: GymCoinWalletResult;
+  gymCoinLabels: GymCoinRewardToastLabels & {
+    badge: string;
+  };
   children: React.ReactNode;
 };
 
@@ -50,6 +59,9 @@ export function DashboardShell({
   communityLabels,
   adminLabels,
   communityBadgeCounts,
+  currentUserId,
+  gymCoinWallet,
+  gymCoinLabels,
   children,
 }: DashboardShellProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -82,6 +94,23 @@ export function DashboardShell({
 
   return (
     <div className="min-h-screen bg-[#050505] text-white">
+      {currentUserId > 0 ? (
+        <GymCoinDailyLoginBootstrap
+          userId={currentUserId}
+          labels={gymCoinLabels}
+        />
+      ) : null}
+
+      <div className="pointer-events-none fixed right-4 top-[4.5rem] z-50 sm:right-6 sm:top-[5.5rem]">
+        <div className="pointer-events-auto">
+          <GymCoinBalanceBadge
+            userId={currentUserId}
+            initialWallet={gymCoinWallet}
+            label={gymCoinLabels.badge}
+          />
+        </div>
+      </div>
+
       <div className="lg:hidden">
         <div className="sticky top-0 z-30 border-b border-white/8 bg-[linear-gradient(180deg,rgba(8,8,8,0.96),rgba(5,5,5,0.92))] px-4 py-3 backdrop-blur-xl">
           <div className="flex items-center justify-between gap-3">
@@ -213,7 +242,23 @@ export function DashboardShell({
   );
 }
 
-type SidebarContentProps = Omit<DashboardShellProps, "children"> & {
+type SidebarContentProps = {
+  locale: string;
+  displayName: string;
+  initials: string;
+  settingsHref: string;
+  settingsLabel: string;
+  signOutLabel: string;
+  mainTitle: string;
+  communityTitle: string;
+  adminTitle: string;
+  primaryItems: readonly NavItem[];
+  communityItems: readonly NavItem[];
+  adminItems: readonly NavItem[];
+  mainLabels: Record<string, string>;
+  communityLabels: Record<string, string>;
+  adminLabels: Record<string, string>;
+  communityBadgeCounts: Partial<Record<string, number>>;
   onNavigate?: () => void;
 };
 

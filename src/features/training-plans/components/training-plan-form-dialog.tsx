@@ -1,11 +1,18 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
+import { refreshGymCoinWallet } from "@/src/features/gymcoin/api/gymcoin-client";
+import { GymCoinFeatureAccessPanel } from "@/src/features/gymcoin/components/gymcoin-feature-access-panel";
+import { useGymCoinFeatureAccess } from "@/src/features/gymcoin/components/use-gymcoin-feature-access";
+import {
+  DEFAULT_GYMCOIN_COSTS,
+  GYMCOIN_FEATURES,
+} from "@/src/features/gymcoin/lib/gymcoin.constants";
 import {
   createTrainingPlanSchema,
   type CreateTrainingPlanInput,
@@ -17,6 +24,7 @@ import type {
 } from "@/src/features/training-plans/lib/training-plan-form.types";
 
 type TrainingPlanFormDialogProps = {
+  currentUserId: number;
   goalOptions: TrainingPlanGoalOption[];
   labels: TrainingPlanFormLabels;
   onSubmitPlan: CreateTrainingPlanMutation;
@@ -31,16 +39,24 @@ const defaultValues: CreateTrainingPlanInput = {
 };
 
 export function TrainingPlanFormDialog({
+  currentUserId,
   goalOptions,
   labels,
   onSubmitPlan,
 }: TrainingPlanFormDialogProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [formError, setFormError] = useState<string | null>(null);
   const hasGoals = goalOptions.length > 0;
   const initialGoal = goalOptions[0]?.value ?? "";
+  const hasGymCoinGuard = Boolean(labels.gymCoinTitle);
+  const accessQuery = useGymCoinFeatureAccess(
+    currentUserId,
+    GYMCOIN_FEATURES.createTrainingPlan,
+    isOpen && hasGymCoinGuard,
+  );
 
   const {
     register,
@@ -57,7 +73,9 @@ export function TrainingPlanFormDialog({
 
   const mutation = useMutation({
     mutationFn: onSubmitPlan,
-    onSuccess: () => {
+    onSuccess: async () => {
+      await refreshGymCoinWallet(queryClient, currentUserId);
+
       startTransition(() => {
         setIsOpen(false);
         setFormError(null);
@@ -79,6 +97,16 @@ export function TrainingPlanFormDialog({
 
   const onSubmit = handleSubmit(async (values) => {
     setFormError(null);
+    if (hasGymCoinGuard) {
+      const access = await accessQuery.refetch();
+
+      if (!access.data?.allowed) {
+        setFormError(
+          access.data?.message ?? labels.gymCoinUnavailable ?? labels.errorFallback,
+        );
+        return;
+      }
+    }
 
     const parsed = createTrainingPlanSchema.safeParse(values);
 
@@ -136,6 +164,24 @@ export function TrainingPlanFormDialog({
             </div>
 
             <form className="space-y-4" onSubmit={onSubmit}>
+              {hasGymCoinGuard ? (
+                <GymCoinFeatureAccessPanel
+                  title={labels.gymCoinTitle ?? ""}
+                  description={labels.gymCoinDescription ?? ""}
+                  checkingLabel={labels.gymCoinChecking ?? labels.submitting}
+                  insufficientLabel={labels.gymCoinInsufficient ?? labels.errorFallback}
+                  unavailableLabel={labels.gymCoinUnavailable ?? labels.errorFallback}
+                  requiredCoins={
+                    accessQuery.data?.requiredCoins ??
+                    DEFAULT_GYMCOIN_COSTS[GYMCOIN_FEATURES.createTrainingPlan]
+                  }
+                  allowed={accessQuery.data?.allowed}
+                  missingCoins={accessQuery.data?.missingCoins ?? 0}
+                  balance={accessQuery.data?.currentBalance ?? null}
+                  isLoading={accessQuery.isLoading || accessQuery.isFetching}
+                />
+              ) : null}
+
               <Field label={labels.titleLabel} htmlFor="training-plan-title">
                 <input
                   id="training-plan-title"
@@ -257,7 +303,13 @@ export function TrainingPlanFormDialog({
                 </button>
                 <button
                   type="submit"
-                  disabled={mutation.isPending || isPending || !hasGoals}
+                  disabled={
+                    mutation.isPending ||
+                    isPending ||
+                    !hasGoals ||
+                    (hasGymCoinGuard && accessQuery.isLoading) ||
+                    accessQuery.data?.allowed === false
+                  }
                   className="inline-flex h-11 items-center justify-center rounded-xl bg-[#1cc31c] px-4 text-sm font-semibold text-black transition-colors hover:bg-[#27d927] disabled:opacity-60"
                 >
                   {mutation.isPending || isPending
