@@ -483,6 +483,14 @@
     }
   },
   "Auth": {
+    "layout": {
+      "title": "Build a consistent training system and keep your progress visible.",
+      "description": "Training Diary helps you log workouts, see progress clearly, and stay disciplined without a cluttered interface.",
+      "cardOneTitle": "A clear start",
+      "cardOneDescription": "Create your account, wait for approval, and move straight into plans, workouts, and progress tracking.",
+      "cardTwoTitle": "Built around outcomes",
+      "cardTwoDescription": "Core actions live in one place: plans, sessions, activity history, and GymCoin are all available without unnecessary complexity."
+    },
     "form": {
       "nameLabel": "Name",
       "namePlaceholder": "Your name",
@@ -494,10 +502,13 @@
       "hidePassword": "Hide password",
       "submitting": "Submitting...",
       "unexpectedError": "Something went wrong. Please try again.",
+      "loginAccountNotFound": "No account was found with these details. Check the email or sign up.",
+      "loginInvalidCredentials": "The email or password is incorrect. Check your details and try again.",
       "approvalEyebrow": "Account status",
       "approvalPendingTitle": "Your account has been sent for admin approval.",
       "approvalPendingDescription": "As soon as an administrator approves the request, you will be able to sign in and continue using Training Diary.",
       "approvalPendingBadge": "Pending",
+      "approvalPendingServerMessage": "Registration request created. Wait for admin approval.",
       "approvalRejectedTitle": "Your registration request was rejected.",
       "approvalRejectedDescription": "Review the rejection reason below and submit a new request if needed.",
       "approvalRejectedBadge": "Rejected",

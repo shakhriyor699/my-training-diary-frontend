@@ -1,8 +1,14 @@
+import { getTranslations } from "next-intl/server";
+
 type AuthLayoutProps = Readonly<{
   children: React.ReactNode;
+  params: Promise<{ locale: string }>;
 }>;
 
-export default function AuthLayout({ children }: AuthLayoutProps) {
+export default async function AuthLayout({ children, params }: AuthLayoutProps) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Auth.layout" });
+
   return (
     <main className="relative flex min-h-screen flex-1 items-center justify-center overflow-hidden px-5 py-8 sm:px-6 sm:py-10">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(80,220,120,0.16),transparent_25%),linear-gradient(180deg,#050505_0%,#090909_60%,#040404_100%)]" />
@@ -19,28 +25,25 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
             </div>
             <div className="space-y-4">
               <h2 className="max-w-md text-5xl font-semibold leading-tight tracking-tight">
-                Build consistent habits and track every training block.
+                {t("title")}
               </h2>
               <p className="max-w-lg text-base leading-7 text-white/62">
-                Clean auth flow, server-first architecture and a focused product
-                surface for athletes who want progress without clutter.
+                {t("description")}
               </p>
             </div>
           </div>
 
           <div className="grid gap-4">
             <div className="rounded-[28px] border border-white/8 bg-white/[0.04] p-5">
-              <p className="text-sm font-medium text-white">Server-first data</p>
+              <p className="text-sm font-medium text-white">{t("cardOneTitle")}</p>
               <p className="mt-2 text-sm leading-6 text-white/55">
-                GET requests can stay in server components and client blocks only
-                handle interaction.
+                {t("cardOneDescription")}
               </p>
             </div>
             <div className="rounded-[28px] border border-white/8 bg-white/[0.04] p-5">
-              <p className="text-sm font-medium text-white">Secure auth</p>
+              <p className="text-sm font-medium text-white">{t("cardTwoTitle")}</p>
               <p className="mt-2 text-sm leading-6 text-white/55">
-                Access token is stored in httpOnly cookies and ready for protected
-                pages.
+                {t("cardTwoDescription")}
               </p>
             </div>
           </div>

@@ -483,6 +483,14 @@
     }
   },
   "Auth": {
+    "layout": {
+      "title": "Собирайте стабильную систему тренировок и держите прогресс под контролем.",
+      "description": "Training Diary помогает вести тренировки, замечать прогресс и сохранять дисциплину без перегруженного интерфейса.",
+      "cardOneTitle": "Понятный старт",
+      "cardOneDescription": "Создайте аккаунт, дождитесь подтверждения и сразу переходите к планам, тренировкам и отслеживанию прогресса.",
+      "cardTwoTitle": "Фокус на результате",
+      "cardTwoDescription": "Все основные действия собраны в одном месте: планы, сессии, история активности и GymCoin доступны без лишней сложности."
+    },
     "form": {
       "nameLabel": "Имя",
       "namePlaceholder": "Ваше имя",
@@ -494,13 +502,16 @@
       "hidePassword": "Скрыть пароль",
       "submitting": "Отправляем...",
       "unexpectedError": "Что-то пошло не так. Попробуйте ещё раз.",
+      "loginAccountNotFound": "Аккаунт с такими данными не найден. Проверьте email или зарегистрируйтесь.",
+      "loginInvalidCredentials": "Неверный email или пароль. Проверьте данные и попробуйте снова.",
       "approvalEyebrow": "Статус аккаунта",
       "approvalPendingTitle": "Ваш аккаунт отправлен на подтверждение администратору.",
       "approvalPendingDescription": "Как только администратор одобрит заявку, вы сможете войти и продолжить работу в Training Diary.",
-      "approvalPendingBadge": "Pending",
+      "approvalPendingBadge": "Ожидает",
+      "approvalPendingServerMessage": "Заявка на регистрацию создана. Дождитесь подтверждения администратора.",
       "approvalRejectedTitle": "Заявка на регистрацию была отклонена.",
       "approvalRejectedDescription": "Проверьте причину отказа ниже и при необходимости отправьте новую заявку.",
-      "approvalRejectedBadge": "Rejected",
+      "approvalRejectedBadge": "Отклонена",
       "approvalRejectedReason": "Причина отказа",
       "approvalPrimaryAction": "На главную",
       "approvalSecondaryAction": "Открыть вход",

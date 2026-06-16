@@ -109,10 +109,16 @@ export function AuthForm({
           (payload.approvalStatus === "pending" || payload.approvalStatus === "rejected")
         ) {
           setBlockedLoginState({
-            message:
+            message: localizeAuthMessage(
               typeof payload.message === "string"
                 ? payload.message
                 : t("approvalPendingTitle"),
+              t,
+              {
+                mode,
+                status: error.status,
+              },
+            ),
             approvalStatus: payload.approvalStatus,
             rejectionReason:
               typeof payload.rejectionReason === "string"
@@ -124,7 +130,12 @@ export function AuthForm({
       }
 
       setFormError(
-        error instanceof Error ? error.message : t("unexpectedError"),
+        error instanceof Error
+          ? localizeAuthMessage(error.message, t, {
+              mode,
+              status: error instanceof ApiError ? error.status : undefined,
+            })
+          : t("unexpectedError"),
       );
     },
   });
@@ -200,7 +211,7 @@ export function AuthForm({
           eyebrow={t("approvalEyebrow")}
           title={t("approvalPendingTitle")}
           description={t("approvalPendingDescription")}
-          detail={registerState.message}
+          detail={localizeAuthMessage(registerState.message, t)}
           accentLabel={t("approvalPendingBadge")}
           actionHref={`/${locale}/login`}
           actionLabel={t("approvalPrimaryAction")}
@@ -370,6 +381,51 @@ export function AuthForm({
       )}
     </Card>
   );
+}
+
+function localizeAuthMessage(
+  message: string,
+  t: ReturnType<typeof useTranslations>,
+  options?: {
+    mode?: AuthMode;
+    status?: number;
+  },
+) {
+  const normalizedMessage = message.trim().toLowerCase();
+
+  if (
+    normalizedMessage ===
+    "registration request created. wait for admin approval."
+  ) {
+    return t("approvalPendingServerMessage");
+  }
+
+  if (options?.mode === "login") {
+    if (
+      normalizedMessage === "authentication request failed." &&
+      options.status === 401
+    ) {
+      return t("loginAccountNotFound");
+    }
+
+    if (
+      normalizedMessage.includes("user not found") ||
+      normalizedMessage.includes("account not found")
+    ) {
+      return t("loginAccountNotFound");
+    }
+
+    if (
+      normalizedMessage.includes("invalid credentials") ||
+      normalizedMessage.includes("invalid password") ||
+      normalizedMessage.includes("wrong password") ||
+      normalizedMessage.includes("invalid email or password")
+    ) {
+      return t("loginInvalidCredentials");
+    }
+  }
+
+  return message;
 }
 
 type ApprovalStateCardProps = {

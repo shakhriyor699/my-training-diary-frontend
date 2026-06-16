@@ -50,29 +50,19 @@ export async function POST(request: Request, context: RouteContext) {
   const responseBody = await upstreamResponse.json().catch(() => null);
 
   if (!upstreamResponse.ok) {
+    const approvalStatus = resolveApprovalStatus(
+      responseBody,
+      action as AuthMode,
+      upstreamResponse.status,
+    );
+    const rejectionReason = resolveRejectionReason(responseBody);
+    const message = resolveAuthErrorMessage(responseBody, approvalStatus);
+
     return NextResponse.json(
       {
-        message:
-          (responseBody &&
-            typeof responseBody === "object" &&
-            "message" in responseBody &&
-            typeof responseBody.message === "string" &&
-            responseBody.message) ||
-          "Authentication request failed.",
-        approvalStatus:
-          responseBody &&
-          typeof responseBody === "object" &&
-          "approvalStatus" in responseBody &&
-          typeof responseBody.approvalStatus === "string"
-            ? responseBody.approvalStatus
-            : undefined,
-        rejectionReason:
-          responseBody &&
-          typeof responseBody === "object" &&
-          "rejectionReason" in responseBody &&
-          typeof responseBody.rejectionReason === "string"
-            ? responseBody.rejectionReason
-            : undefined,
+        message,
+        approvalStatus,
+        rejectionReason,
       },
       { status: upstreamResponse.status },
     );
@@ -155,4 +145,66 @@ export async function POST(request: Request, context: RouteContext) {
     accessToken,
     forwardedCookies,
   });
+}
+
+function getObjectValue(payload: unknown) {
+  return payload && typeof payload === "object"
+    ? (payload as Record<string, unknown>)
+    : null;
+}
+
+function getStringValue(value: unknown) {
+  return typeof value === "string" ? value : undefined;
+}
+
+function resolveApprovalStatus(
+  responseBody: unknown,
+  action: AuthMode,
+  status: number,
+) {
+  const value = getObjectValue(responseBody);
+  const directApprovalStatus = getStringValue(value?.approvalStatus);
+
+  if (directApprovalStatus) {
+    return directApprovalStatus;
+  }
+
+  const message = getStringValue(value?.message)?.toLowerCase() ?? "";
+  const rejectionReason = resolveRejectionReason(responseBody);
+
+  if (message.includes("reject") || rejectionReason) {
+    return "rejected";
+  }
+
+  if (message.includes("pending") || message.includes("approval")) {
+    return "pending";
+  }
+
+  if (action === "login" && status === 403) {
+    return "pending";
+  }
+
+  return undefined;
+}
+
+function resolveRejectionReason(responseBody: unknown) {
+  const value = getObjectValue(responseBody);
+  return getStringValue(value?.rejectionReason);
+}
+
+function resolveAuthErrorMessage(
+  responseBody: unknown,
+  approvalStatus?: string,
+) {
+  const value = getObjectValue(responseBody);
+  const directMessage = getStringValue(value?.message);
+
+  if (approvalStatus === "pending") {
+    return (
+      directMessage ??
+      "Registration request created. Wait for admin approval."
+    );
+  }
+
+  return directMessage ?? "Authentication request failed.";
 }
